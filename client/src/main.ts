@@ -23,18 +23,13 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   // Dynamically import the registered SW from vite-plugin-pwa
   import('virtual:pwa-register')
     .then(({ registerSW }) => {
-      registerSW({
+      const updateSW = registerSW({
         onNeedRefresh() {
-          // Show the update banner
           const banner = document.getElementById('sw-update-banner');
           if (banner) {
             banner.hidden = false;
             const btn = banner.querySelector<HTMLButtonElement>('#sw-update-btn');
-            btn?.addEventListener('click', () => {
-              // Tell the waiting SW to skip waiting, then reload
-              navigator.serviceWorker.controller?.postMessage({ type: 'SKIP_WAITING' });
-              window.location.reload();
-            });
+            btn?.addEventListener('click', () => updateSW(true));
           }
         },
         onOfflineReady() {
