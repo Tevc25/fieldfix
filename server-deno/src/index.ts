@@ -382,5 +382,5 @@ app.get('/uploads/:filename', async (c) => {
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 const port = Number(Deno.env.get('PORT') ?? 3002);
-console.log(`[deno-hono] Listening on http://localhost:${port}`);
+console.warn(`[deno-hono] Listening on http://localhost:${port}`);
 Deno.serve({ port }, app.fetch);

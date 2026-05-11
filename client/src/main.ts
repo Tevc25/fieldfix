@@ -17,7 +17,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   // Listen for SW log messages in development/testing
   const swLog = new BroadcastChannel('sw-log');
   swLog.addEventListener('message', (e: MessageEvent<{ ts: number; msg: string }>) => {
-    console.debug('[SW]', new Date(e.data.ts).toISOString(), e.data.msg);
+    console.warn('[SW]', new Date(e.data.ts).toISOString(), e.data.msg);
   });
 
   // Dynamically import the registered SW from vite-plugin-pwa
@@ -38,7 +38,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
           }
         },
         onOfflineReady() {
-          console.info('[SW] App ready for offline use.');
+          console.warn('[SW] App ready for offline use.');
         },
         onRegistered(r: ServiceWorkerRegistration | undefined) {
           if (!r) return;

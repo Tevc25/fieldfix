@@ -357,4 +357,4 @@ const app = new Elysia()
 
   .listen(Number(process.env['PORT'] ?? 3001));
 
-console.log(`[bun-elysia] Listening on http://localhost:${app.server?.port}`);
+console.warn(`[bun-elysia] Listening on http://localhost:${app.server?.port}`);

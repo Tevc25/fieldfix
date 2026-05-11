@@ -4,14 +4,6 @@
  */
 import { test, expect } from '@playwright/test';
 
-const REPORT_FORM_FIELDS = {
-  title: 'Udarna jama na testni ulici k6',
-  category: 'pothole',
-  description: 'Testna udarna jama, ki je nevarna za kolesarje in pešce v okolici centra.',
-  lat: '46.5583',
-  lng: '15.6459',
-};
-
 function makeCreatedReport(id: string) {
   return {
     id,
