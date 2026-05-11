@@ -1,0 +1,44 @@
+{
+  "name": "PrijaviMesto",
+  "short_name": "PrijaviMesto",
+  "description": "Prijavite komunalne težave v vašem mestu — jame, pokvarjene svetilke, grafite in več.",
+  "lang": "sl",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#1565C0",
+  "background_color": "#FFFFFF",
+  "categories": ["utilities", "government"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Nova prijava",
+      "short_name": "Prijavi",
+      "description": "Oddajte novo prijavo komunalne težave",
+      "url": "/prijavi",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

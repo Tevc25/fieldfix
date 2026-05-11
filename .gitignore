@@ -1,0 +1,31 @@
+node_modules/
+dist/
+.cache/
+coverage/
+*.local
+.env
+.env.*
+!.env.example
+
+# SQLite databases (generated from seed)
+*.db
+*.db-shm
+*.db-wal
+
+# Build output
+client/dist/
+client/.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Editor
+.vscode/settings.json
+.idea/
+
+# Benchmark results (committed manually after review)
+benchmarks/results/*.json

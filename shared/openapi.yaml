@@ -1,0 +1,461 @@
+openapi: '3.1.0'
+info:
+  title: FieldFix API
+  description: REST API za aplikacijo PrijaviMesto — prijave komunalnih težav s strani občanov.
+  version: '1.0.0'
+  contact:
+    name: FieldFix Team
+    email: fieldfix@example.com
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Node/Fastify (razvoj)
+  - url: http://localhost:3001
+    description: Bun/Elysia (razvoj)
+  - url: http://localhost:3002
+    description: Deno/Hono (razvoj)
+
+tags:
+  - name: reports
+    description: Upravljanje prijav komunalnih težav
+  - name: subscriptions
+    description: Upravljanje push naročnin
+  - name: health
+    description: Stanje strežnika
+
+paths:
+  /api/reports:
+    post:
+      tags: [reports]
+      summary: Ustvari novo prijavo
+      operationId: createReport
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [clientId, title, category, description, lat, lng]
+              properties:
+                clientId:
+                  type: string
+                  format: uuid
+                  description: Unikatni ID, generiran na odjemalcu (za preprečevanje podvojenih prijav)
+                title:
+                  type: string
+                  minLength: 3
+                  maxLength: 120
+                category:
+                  $ref: '#/components/schemas/ReportCategory'
+                description:
+                  type: string
+                  minLength: 10
+                  maxLength: 2000
+                lat:
+                  type: number
+                  format: float
+                  minimum: -90
+                  maximum: 90
+                lng:
+                  type: number
+                  format: float
+                  minimum: -180
+                  maximum: 180
+                address:
+                  type: string
+                  maxLength: 255
+                photo:
+                  type: string
+                  format: binary
+                  description: Slika v formatu JPEG ali WebP, največ 5 MB
+      responses:
+        '201':
+          description: Prijava uspešno ustvarjena
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateReportResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags: [reports]
+      summary: Seznam prijav (paginirano)
+      operationId: listReports
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ReportStatus'
+          description: Filtriraj po statusu
+        - name: bbox
+          in: query
+          schema:
+            type: string
+            pattern: '^-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?$'
+          description: 'Geografski okvir: minLng,minLat,maxLng,maxLat'
+          example: '15.60,46.52,15.70,46.58'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Uspešen seznam prijav
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReports'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/reports/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [reports]
+      summary: Podrobnosti prijave z zgodovino statusov
+      operationId: getReport
+      responses:
+        '200':
+          description: Uspešna pridobitev prijave
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/reports/{id}/status:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      tags: [reports]
+      summary: Posodobi status prijave (zahteva admin žeton)
+      operationId: updateReportStatus
+      security:
+        - AdminToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: '#/components/schemas/ReportStatus'
+                note:
+                  type: string
+                  maxLength: 500
+                  description: Opomba ob spremembi statusa
+      responses:
+        '200':
+          description: Status uspešno posodobljen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/subscriptions:
+    post:
+      tags: [subscriptions]
+      summary: Registriraj push naročnino
+      operationId: createSubscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint, keys]
+              properties:
+                endpoint:
+                  type: string
+                  format: uri
+                keys:
+                  type: object
+                  required: [p256dh, auth]
+                  properties:
+                    p256dh:
+                      type: string
+                    auth:
+                      type: string
+      responses:
+        '201':
+          description: Naročnina uspešno registrirana
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  endpointHash:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/subscriptions/{endpointHash}:
+    parameters:
+      - name: endpointHash
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      tags: [subscriptions]
+      summary: Odstrani push naročnino
+      operationId: deleteSubscription
+      responses:
+        '204':
+          description: Naročnina uspešno odstranjena
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/health:
+    get:
+      tags: [health]
+      summary: Stanje strežnika (za merjenje hladnega zagona)
+      operationId: getHealth
+      responses:
+        '200':
+          description: Strežnik deluje
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  securitySchemes:
+    AdminToken:
+      type: apiKey
+      in: header
+      name: X-Admin-Token
+      description: Statičen admin žeton (samo za namene projekta)
+
+  schemas:
+    ReportStatus:
+      type: string
+      enum: [submitted, in_review, resolved, rejected]
+      description: |
+        - submitted: Prijava oddana, čaka na pregled
+        - in_review: Prijava v obravnavi
+        - resolved: Težava rešena
+        - rejected: Prijava zavrnjena
+
+    ReportCategory:
+      type: string
+      enum: [pothole, broken_streetlight, graffiti, illegal_dumping, damaged_sign, other]
+      description: |
+        - pothole: Udarna jama
+        - broken_streetlight: Pokvarjena ulična svetilka
+        - graffiti: Grafiti
+        - illegal_dumping: Ilegalno odlaganje odpadkov
+        - damaged_sign: Poškodovana prometna signalizacija
+        - other: Drugo
+
+    Report:
+      type: object
+      required: [id, clientId, title, category, description, lat, lng, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        category:
+          $ref: '#/components/schemas/ReportCategory'
+        description:
+          type: string
+        lat:
+          type: number
+          format: float
+        lng:
+          type: number
+          format: float
+        address:
+          type: string
+          nullable: true
+        photoUrl:
+          type: string
+          format: uri
+          nullable: true
+        status:
+          $ref: '#/components/schemas/ReportStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ReportDetail:
+      allOf:
+        - $ref: '#/components/schemas/Report'
+        - type: object
+          required: [statusHistory]
+          properties:
+            statusHistory:
+              type: array
+              items:
+                $ref: '#/components/schemas/StatusHistoryEntry'
+
+    StatusHistoryEntry:
+      type: object
+      required: [id, reportId, status, changedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        reportId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ReportStatus'
+        note:
+          type: string
+          nullable: true
+        changedAt:
+          type: string
+          format: date-time
+
+    CreateReportResponse:
+      type: object
+      required: [id, clientId, status, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ReportStatus'
+        createdAt:
+          type: string
+          format: date-time
+
+    PaginatedReports:
+      type: object
+      required: [data, total, page, pageSize]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    HealthResponse:
+      type: object
+      required: [status, runtime, uptime]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        runtime:
+          type: string
+          example: 'node/22.0.0'
+        uptime:
+          type: number
+          description: Čas delovanja v sekundah
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+
+  responses:
+    BadRequest:
+      description: Napačna zahteva — validacija ni uspela
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Manjka ali neveljaven admin žeton
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Vir ni bil najden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:
+      description: Neveljavni prehod statusa
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PayloadTooLarge:
+      description: Datoteka je prevelika (maks. 5 MB)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: Notranja napaka strežnika
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

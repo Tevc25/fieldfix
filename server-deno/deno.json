@@ -1,0 +1,16 @@
+{
+  "name": "fieldfix-server-deno",
+  "version": "0.1.0",
+  "tasks": {
+    "dev": "deno run --watch --allow-net --allow-read --allow-write --allow-env --allow-ffi src/index.ts",
+    "start": "deno run --allow-net --allow-read --allow-write --allow-env --allow-ffi src/index.ts"
+  },
+  "imports": {
+    "hono": "jsr:@hono/hono@^4.6.0",
+    "hono/": "jsr:@hono/hono@^4.6.0/",
+    "@db/sqlite": "jsr:@db/sqlite@^0.12.0",
+    "web-push": "npm:web-push@^3.6.7",
+    "zod": "npm:zod@^3.23.8",
+    "@fieldfix/shared": "../shared/src/index.ts"
+  }
+}
