@@ -155,7 +155,6 @@ pnpm --filter client test:e2e      # Playwright E2E + axe-core
 | [testiranje.md](docs/testiranje.md) | Strategija in rezultati testiranja |
 | [porocilo-dostopnost.md](docs/porocilo-dostopnost.md) | WCAG 2.2 AA poročilo |
 | [navodila-za-zagon.md](docs/navodila-za-zagon.md) | Podrobna navodila za zagon |
-| [razdelitev-dela.md](docs/razdelitev-dela.md) | Ekipa in razdelitev nalog |
 
 ---
 
