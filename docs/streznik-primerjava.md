@@ -3,11 +3,11 @@
 Projekt FieldFix vsebuje tri vzporedne strežniške implementacije z enakimi 9 API-ji, vsaka
 pa teče na svojem runtime-u in ogrodju:
 
-| Varianta | Runtime | Ogrodje | Port |
-|----------|---------|---------|------|
-| **Node** | Node.js 22 | Fastify 5 | 3000 |
-| **Bun** | Bun 1.x | Elysia 1.4 | 3001 |
-| **Deno** | Deno 2.x | Hono 4 | 3002 |
+| Varianta | Runtime    | Ogrodje    | Port |
+| -------- | ---------- | ---------- | ---- |
+| **Node** | Node.js 22 | Fastify 5  | 3000 |
+| **Bun**  | Bun 1.x    | Elysia 1.4 | 3001 |
+| **Deno** | Deno 2.x   | Hono 4     | 3002 |
 
 ---
 
@@ -48,11 +48,11 @@ pa teče na svojem runtime-u in ogrodju:
 
 ![Čas hladnega zagona](../benchmarks/results/chart-cold-start.png)
 
-| Varianta | Meritve (ms) | Povprečje |
-|----------|-------------|-----------|
-| Node | 365, 339, 338, 338, 389 | **354 ms** |
-| Bun | 173, 114, 117, 122, 121 | **129 ms** |
-| Deno | — | — |
+| Varianta | Meritve (ms)            | Povprečje  |
+| -------- | ----------------------- | ---------- |
+| Node     | 365, 339, 338, 338, 389 | **354 ms** |
+| Bun      | 173, 114, 117, 122, 121 | **129 ms** |
+| Deno     | —                       | —          |
 
 **Ugotovitev:** Bun se zažene 2,7× hitreje od Node.js. Razlika izhaja iz tega, da Bun ne
 potrebuje JIT ogrevanja pri zagonu in ima vgrajeno podporo za TypeScript brez dodatnih
@@ -64,11 +64,11 @@ transpilacijskih korakov (Node varianta uporablja `tsx/esm`).
 
 ![Prepustnost](../benchmarks/results/chart-throughput.png)
 
-| Varianta | Skupaj zahtev | req/s |
-|----------|--------------|-------|
-| Node | 467 154 | **7 785** |
-| Bun | 459 583 | **7 658** |
-| Deno | — | — |
+| Varianta | Skupaj zahtev | req/s     |
+| -------- | ------------- | --------- |
+| Node     | 467 154       | **7 785** |
+| Bun      | 459 583       | **7 658** |
+| Deno     | —             | —         |
 
 **Ugotovitev:** Pri 100 VU in 60 s Node preseže Bun za ~1,7 %. Razlika ni statistično
 značilna — oba runtime-a dosežeta primerljivo prepustnost. Ozko grlo je pri tej obremenitvi
@@ -80,11 +80,11 @@ SQLite (serijska pisalna zaklepanja), ne pa runtime sam.
 
 ![Zakasnitev](../benchmarks/results/chart-latency.png)
 
-| Varianta | p50 (median) | p90 | p95 |
-|----------|-------------|-----|-----|
-| Node | 0,64 ms | 10,77 ms | 11,78 ms |
-| Bun | 1,00 ms | 11,91 ms | 12,85 ms |
-| Deno | — | — | — |
+| Varianta | p50 (median) | p90      | p95      |
+| -------- | ------------ | -------- | -------- |
+| Node     | 0,64 ms      | 10,77 ms | 11,78 ms |
+| Bun      | 1,00 ms      | 11,91 ms | 12,85 ms |
+| Deno     | —            | —        | —        |
 
 **Ugotovitev:** Node ima nekoliko nižji medians (0,64 ms vs 1,00 ms), kar nakazuje, da
 Fastify obdeluje posamezne zahteve rahlo hitreje kot Elysia pri nizki zasedenosti. Pri
@@ -97,10 +97,10 @@ visokih percentilih (p90/p95) so razlike manjše kot 10 % — praktično enakovr
 ![Pomnilnik](../benchmarks/results/chart-memory.png)
 
 | Varianta | Idle RSS | Peak RSS |
-|----------|---------|---------|
-| Node | 118 MB | 231 MB |
-| Bun | 83 MB | 145 MB |
-| Deno | — | — |
+| -------- | -------- | -------- |
+| Node     | 118 MB   | 231 MB   |
+| Bun      | 83 MB    | 145 MB   |
+| Deno     | —        | —        |
 
 **Ugotovitev:** Bun porabi ~30 % manj pomnilnika v mirovanju in ~37 % manj na vrhu
 obremenitve. Razlika je posledica tega, da Node.js nosi V8 z večjim heap-om in da Fastify
@@ -113,10 +113,10 @@ z vtičniki (multipart, swagger) zavzame več prostora pri inicializaciji.
 ![LOC](../benchmarks/results/chart-loc.png)
 
 | Varianta | LOC (src/) |
-|----------|-----------|
-| Node | 529 |
-| Bun | 393 |
-| Deno | 418 |
+| -------- | ---------- |
+| Node     | 529        |
+| Bun      | 393        |
+| Deno     | 418        |
 
 **Ugotovitev:** Node varianta je najdaljša, ker Fastify temelji na vtičnikih
 (`fastify.register`, `@fastify/multipart`, ločene route datoteke), kar zahteva več
@@ -152,14 +152,14 @@ logika v eni datoteki.
 
 ## Skupna ocena
 
-| Kriterij | Node/Fastify | Bun/Elysia | Deno/Hono |
-|----------|-------------|-----------|----------|
-| Prepustnost | ★★★★☆ | ★★★★☆ | n/m |
-| Zakasnitev (p95) | ★★★★☆ | ★★★★☆ | n/m |
-| Poraba pomnilnika | ★★★☆☆ | ★★★★★ | n/m |
-| Čas zagona | ★★★☆☆ | ★★★★★ | n/m |
-| Zrelost ekosistema | ★★★★★ | ★★★☆☆ | ★★★★☆ |
-| Jedrnatost kode | ★★★☆☆ | ★★★★★ | ★★★★☆ |
+| Kriterij           | Node/Fastify | Bun/Elysia | Deno/Hono |
+| ------------------ | ------------ | ---------- | --------- |
+| Prepustnost        | ★★★★☆        | ★★★★☆      | n/m       |
+| Zakasnitev (p95)   | ★★★★☆        | ★★★★☆      | n/m       |
+| Poraba pomnilnika  | ★★★☆☆        | ★★★★★      | n/m       |
+| Čas zagona         | ★★★☆☆        | ★★★★★      | n/m       |
+| Zrelost ekosistema | ★★★★★        | ★★★☆☆      | ★★★★☆     |
+| Jedrnatost kode    | ★★★☆☆        | ★★★★★      | ★★★★☆     |
 
 > **n/m** = ni merjeno (Deno ni bil nameščen na testnem računalniku)
 

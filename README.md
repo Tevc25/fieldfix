@@ -105,30 +105,30 @@ fieldfix/
 
 Vsi strežniki implementirajo enake končne točke (definirane v `shared/openapi.yaml`):
 
-| Metoda | Pot | Opis |
-|--------|-----|------|
-| `POST` | `/api/reports` | Ustvari prijavo (multipart: polja + foto) |
-| `GET` | `/api/reports` | Seznam prijav (`?status=&bbox=&page=`) |
-| `GET` | `/api/reports/:id` | Podrobnosti + zgodovina statusov |
-| `PATCH` | `/api/reports/:id/status` | Sprememba statusa (zahteva admin žeton) |
-| `POST` | `/api/subscriptions` | Registracija push naročnine |
-| `DELETE` | `/api/subscriptions/:hash` | Odjava push naročnine |
-| `GET` | `/api/health` | Zdravstveni status |
-| `GET` | `/api/vapid-public-key` | VAPID javni ključ |
-| `GET` | `/uploads/:filename` | Naložene fotografije |
+| Metoda   | Pot                        | Opis                                      |
+| -------- | -------------------------- | ----------------------------------------- |
+| `POST`   | `/api/reports`             | Ustvari prijavo (multipart: polja + foto) |
+| `GET`    | `/api/reports`             | Seznam prijav (`?status=&bbox=&page=`)    |
+| `GET`    | `/api/reports/:id`         | Podrobnosti + zgodovina statusov          |
+| `PATCH`  | `/api/reports/:id/status`  | Sprememba statusa (zahteva admin žeton)   |
+| `POST`   | `/api/subscriptions`       | Registracija push naročnine               |
+| `DELETE` | `/api/subscriptions/:hash` | Odjava push naročnine                     |
+| `GET`    | `/api/health`              | Zdravstveni status                        |
+| `GET`    | `/api/vapid-public-key`    | VAPID javni ključ                         |
+| `GET`    | `/uploads/:filename`       | Naložene fotografije                      |
 
 ---
 
 ## Primerjava strežnikov / Server Comparison
 
-| | Node/Fastify | Bun/Elysia | Deno/Hono |
-|--|--|--|--|
-| **req/s** (100 VU, 60 s) | 7 785 | 7 658 | — |
-| **p95 zakasnitev** | 11,8 ms | 12,9 ms | — |
-| **RSS idle** | 118 MB | 83 MB | — |
-| **RSS peak** | 231 MB | 145 MB | — |
-| **Čas zagona** | 354 ms | 129 ms | — |
-| **LOC (src/)** | 529 | 393 | 418 |
+|                          | Node/Fastify | Bun/Elysia | Deno/Hono |
+| ------------------------ | ------------ | ---------- | --------- |
+| **req/s** (100 VU, 60 s) | 7 785        | 7 658      | —         |
+| **p95 zakasnitev**       | 11,8 ms      | 12,9 ms    | —         |
+| **RSS idle**             | 118 MB       | 83 MB      | —         |
+| **RSS peak**             | 231 MB       | 145 MB     | —         |
+| **Čas zagona**           | 354 ms       | 129 ms     | —         |
+| **LOC (src/)**           | 529          | 393        | 418       |
 
 Celotna primerjava: [docs/streznik-primerjava.md](docs/streznik-primerjava.md)
 
@@ -146,15 +146,15 @@ pnpm --filter client test:e2e      # Playwright E2E + axe-core
 
 ## Dokumentacija / Documentation
 
-| Dokument | Vsebina |
-|----------|---------|
-| [ideja-in-ciljna-skupina.md](docs/ideja-in-ciljna-skupina.md) | Opis ideje in ciljne skupine |
-| [pwa-zmoznosti.md](docs/pwa-zmoznosti.md) | SW strategije predpomnjenja |
-| [web-apiji.md](docs/web-apiji.md) | Sodobni spletni API-ji |
-| [streznik-primerjava.md](docs/streznik-primerjava.md) | Izmerjene primerjave strežnikov |
-| [testiranje.md](docs/testiranje.md) | Strategija in rezultati testiranja |
-| [porocilo-dostopnost.md](docs/porocilo-dostopnost.md) | WCAG 2.2 AA poročilo |
-| [navodila-za-zagon.md](docs/navodila-za-zagon.md) | Podrobna navodila za zagon |
+| Dokument                                                      | Vsebina                            |
+| ------------------------------------------------------------- | ---------------------------------- |
+| [ideja-in-ciljna-skupina.md](docs/ideja-in-ciljna-skupina.md) | Opis ideje in ciljne skupine       |
+| [pwa-zmoznosti.md](docs/pwa-zmoznosti.md)                     | SW strategije predpomnjenja        |
+| [web-apiji.md](docs/web-apiji.md)                             | Sodobni spletni API-ji             |
+| [streznik-primerjava.md](docs/streznik-primerjava.md)         | Izmerjene primerjave strežnikov    |
+| [testiranje.md](docs/testiranje.md)                           | Strategija in rezultati testiranja |
+| [porocilo-dostopnost.md](docs/porocilo-dostopnost.md)         | WCAG 2.2 AA poročilo               |
+| [navodila-za-zagon.md](docs/navodila-za-zagon.md)             | Podrobna navodila za zagon         |
 
 ---
 

@@ -31,7 +31,11 @@ test.describe('Online report submission', () => {
       });
     });
     await page.route('**/api/vapid-public-key', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ publicKey: 'BFake' }) }),
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ publicKey: 'BFake' }),
+      }),
     );
   });
 
@@ -46,7 +50,9 @@ test.describe('Online report submission', () => {
     await page.goto('/new');
     await page.waitForTimeout(300);
     // Every input/select/textarea must have an accessible label
-    const inputs = page.locator('input:not([type="hidden"]):not([type="submit"]), select, textarea');
+    const inputs = page.locator(
+      'input:not([type="hidden"]):not([type="submit"]), select, textarea',
+    );
     const count = await inputs.count();
     expect(count).toBeGreaterThan(0);
     for (let i = 0; i < count; i++) {
@@ -66,7 +72,11 @@ test.describe('Online report submission', () => {
 test.describe('Offline mode', () => {
   test('offline banner appears when browser is offline', async ({ page, context }) => {
     await page.route('**/api/**', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{"data":[],"total":0,"page":1,"pageSize":20}' }),
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: '{"data":[],"total":0,"page":1,"pageSize":20}',
+      }),
     );
     await page.goto('/');
     await page.waitForTimeout(300);
@@ -83,10 +93,17 @@ test.describe('Offline mode', () => {
     await expect(body).toBeVisible();
   });
 
-  test('/new form is available offline (no network needed for render)', async ({ page, context }) => {
+  test('/new form is available offline (no network needed for render)', async ({
+    page,
+    context,
+  }) => {
     // Pre-load the app first so service worker / app shell is in place
     await page.route('**/api/**', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{"data":[],"total":0,"page":1,"pageSize":20}' }),
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: '{"data":[],"total":0,"page":1,"pageSize":20}',
+      }),
     );
     await page.goto('/new');
     await page.waitForTimeout(500);
@@ -102,7 +119,11 @@ test.describe('Offline mode', () => {
 
   test('manual sync button is present on report form', async ({ page }) => {
     await page.route('**/api/**', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{"data":[],"total":0,"page":1,"pageSize":20}' }),
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: '{"data":[],"total":0,"page":1,"pageSize":20}',
+      }),
     );
     await page.goto('/new');
     await page.waitForTimeout(500);
@@ -116,9 +137,16 @@ test.describe('Report list', () => {
   test('list page renders report cards from API', async ({ page }) => {
     const reports = [
       {
-        id: 'r1', clientId: 'c1', title: 'Udarna jama #1', category: 'pothole',
-        description: 'Opis', lat: 46.558, lng: 15.646, status: 'submitted',
-        createdAt: '2025-01-01T10:00:00Z', updatedAt: '2025-01-01T10:00:00Z',
+        id: 'r1',
+        clientId: 'c1',
+        title: 'Udarna jama #1',
+        category: 'pothole',
+        description: 'Opis',
+        lat: 46.558,
+        lng: 15.646,
+        status: 'submitted',
+        createdAt: '2025-01-01T10:00:00Z',
+        updatedAt: '2025-01-01T10:00:00Z',
       },
     ];
     await page.route('**/api/reports**', (route) =>
@@ -129,7 +157,11 @@ test.describe('Report list', () => {
       }),
     );
     await page.route('**/api/vapid-public-key', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ publicKey: 'BFake' }) }),
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ publicKey: 'BFake' }),
+      }),
     );
 
     await page.goto('/');

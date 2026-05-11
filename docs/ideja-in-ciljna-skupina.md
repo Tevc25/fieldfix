@@ -37,14 +37,14 @@ rešuje:
 
 ### Zakaj PWA in ne nativna aplikacija?
 
-| Dejavnik | PWA | Nativna aplikacija |
-|----------|-----|-------------------|
-| Namestitev | Brez trgovine (dodaj na začetni zaslon) | App Store / Play Store |
-| Posodobitve | Samodejno prek Service Workerja | Ročno ali avtomatično prek trgovine |
-| Razvoj | En kodni osnovi za vse platforme | iOS + Android ločeno |
-| Dostopnost | Takoj dostopna prek URL-ja | Zahteva predhodno namestitev |
-| Brez povezave | Background Sync + IndexedDB | Posebna implementacija |
-| Potisna obvestila | Web Push API (VAPID) | FCM / APNs |
+| Dejavnik          | PWA                                     | Nativna aplikacija                  |
+| ----------------- | --------------------------------------- | ----------------------------------- |
+| Namestitev        | Brez trgovine (dodaj na začetni zaslon) | App Store / Play Store              |
+| Posodobitve       | Samodejno prek Service Workerja         | Ročno ali avtomatično prek trgovine |
+| Razvoj            | En kodni osnovi za vse platforme        | iOS + Android ločeno                |
+| Dostopnost        | Takoj dostopna prek URL-ja              | Zahteva predhodno namestitev        |
+| Brez povezave     | Background Sync + IndexedDB             | Posebna implementacija              |
+| Potisna obvestila | Web Push API (VAPID)                    | FCM / APNs                          |
 
 PWA je za ta projekt optimalna izbira: ob nizki kompleksnosti razvoja zagotavlja vse
 ključne funkcionalnosti nativnih aplikacij, hkrati pa je dostopna vsem uporabnikom brez

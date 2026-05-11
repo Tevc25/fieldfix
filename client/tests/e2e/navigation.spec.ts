@@ -29,20 +29,37 @@ const MOCK_REPORTS = {
 const MOCK_REPORT_DETAIL = {
   ...MOCK_REPORTS.data[0],
   statusHistory: [
-    { id: 'h1', reportId: 'a1000000-0000-0000-0000-000000000001', status: 'submitted', changedAt: '2025-01-01T10:00:00Z' },
+    {
+      id: 'h1',
+      reportId: 'a1000000-0000-0000-0000-000000000001',
+      status: 'submitted',
+      changedAt: '2025-01-01T10:00:00Z',
+    },
   ],
 };
 
 test.beforeEach(async ({ page }) => {
   // Mock all API calls so tests don't require a running server
   await page.route('**/api/reports?**', (route) =>
-    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_REPORTS) }),
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(MOCK_REPORTS),
+    }),
   );
   await page.route('**/api/reports/a1000000-**', (route) =>
-    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_REPORT_DETAIL) }),
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(MOCK_REPORT_DETAIL),
+    }),
   );
   await page.route('**/api/vapid-public-key', (route) =>
-    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ publicKey: 'BFake_key' }) }),
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ publicKey: 'BFake_key' }),
+    }),
   );
 });
 

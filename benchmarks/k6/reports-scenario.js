@@ -40,7 +40,12 @@ const REPORT_IDS = [
 ];
 
 const CATEGORIES = [
-  'pothole', 'broken_streetlight', 'graffiti', 'illegal_dumping', 'damaged_sign', 'other',
+  'pothole',
+  'broken_streetlight',
+  'graffiti',
+  'illegal_dumping',
+  'damaged_sign',
+  'other',
 ];
 
 function pick(arr) {
@@ -73,23 +78,27 @@ const MULTIPART_HEADERS = {
 export default function () {
   const roll = Math.random();
 
-  if (roll < 0.80) {
+  if (roll < 0.8) {
     // ── 80% GET list ────────────────────────────────────────────────────────
     const res = http.get(`${BASE_URL}/api/reports?page=1&pageSize=20`);
     check(res, {
       'GET /api/reports → 200': (r) => r.status === 200,
       'has data array': (r) => {
-        try { return Array.isArray(JSON.parse(r.body).data); } catch { return false; }
+        try {
+          return Array.isArray(JSON.parse(r.body).data);
+        } catch {
+          return false;
+        }
       },
     });
-
   } else if (roll < 0.95) {
     // ── 15% POST create (proper multipart/form-data) ─────────────────────────
     const body = buildMultipart({
       clientId: uuid4(),
       title: `Okvara ${pick(['udarna jama', 'pokvarjena svetilka', 'grafiti', 'odpadki', 'znak'])} k6`,
       category: pick(CATEGORIES),
-      description: 'Opis napake za obremenitveno testiranje sistema PrijaviMesto v okolici Maribora.',
+      description:
+        'Opis napake za obremenitveno testiranje sistema PrijaviMesto v okolici Maribora.',
       lat: (46.5 + Math.random() * 0.1).toFixed(6),
       lng: (15.6 + Math.random() * 0.1).toFixed(6),
     });
@@ -97,7 +106,6 @@ export default function () {
     check(res, {
       'POST /api/reports → 201 or 200': (r) => r.status === 201 || r.status === 200,
     });
-
   } else {
     // ── 5% PATCH status ─────────────────────────────────────────────────────
     // 422 expected once seeded reports exhaust transitions — counts throughput

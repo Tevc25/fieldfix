@@ -7,14 +7,14 @@ Dostopnost je vgrajena že od faze 3, ne dograjena naknadno.
 
 ## Metodologija
 
-| Metoda | Orodje / standard |
-|--------|-------------------|
-| Avtomatizirani audit | `@axe-core/playwright` v vsakem E2E testu |
-| Brskalnik brez miške | Ročna navigacija samo s tipkovnico |
-| Bralnik zaslona | VoiceOver (macOS Sequoia 15, Safari 18) |
-| Barvni kontrast | Preverjen z DevTools "Contrast" in axe |
-| Zoom 200 % | Preverjen v brskalniku Chrome in Safari |
-| Zmanjšana animacija | `prefers-reduced-motion` testiran v sistemskih nastavitvah |
+| Metoda               | Orodje / standard                                          |
+| -------------------- | ---------------------------------------------------------- |
+| Avtomatizirani audit | `@axe-core/playwright` v vsakem E2E testu                  |
+| Brskalnik brez miške | Ročna navigacija samo s tipkovnico                         |
+| Bralnik zaslona      | VoiceOver (macOS Sequoia 15, Safari 18)                    |
+| Barvni kontrast      | Preverjen z DevTools "Contrast" in axe                     |
+| Zoom 200 %           | Preverjen v brskalniku Chrome in Safari                    |
+| Zmanjšana animacija  | `prefers-reduced-motion` testiran v sistemskih nastavitvah |
 
 ---
 
@@ -32,13 +32,13 @@ Dostopnost je vgrajena že od faze 3, ne dograjena naknadno.
 
 ## Tipkovnica in upravljanje fokusa (WCAG 2.1.1, 2.4.3)
 
-| Scenarij | Rezultat |
-|----------|---------|
-| Tab skozi vse interaktivne elemente | Vsak element je dosegljiv |
-| Vidni obroč fokusa | Prisoten na vseh kontrolah (≥ 3:1 kontrast) |
-| Skip-link na `<main>` | Aktiven ob prvem pritisku Tab |
-| Zaprtje pogovornega okna kamere s tipko Esc | Deluje, fokus se vrne na sprožilni element |
-| Navigacija med pogledi | Fokus premakne na `<main>`, VoiceOver prebere naslov strani |
+| Scenarij                                    | Rezultat                                                    |
+| ------------------------------------------- | ----------------------------------------------------------- |
+| Tab skozi vse interaktivne elemente         | Vsak element je dosegljiv                                   |
+| Vidni obroč fokusa                          | Prisoten na vseh kontrolah (≥ 3:1 kontrast)                 |
+| Skip-link na `<main>`                       | Aktiven ob prvem pritisku Tab                               |
+| Zaprtje pogovornega okna kamere s tipko Esc | Deluje, fokus se vrne na sprožilni element                  |
+| Navigacija med pogledi                      | Fokus premakne na `<main>`, VoiceOver prebere naslov strani |
 
 **Ugotovitev:** Brez kršitev. Fokusna past v pogovornem oknu kamere (`role="dialog" aria-modal="true"`) pravilno ohranja fokus znotraj, Esc pa ga sprosti.
 
@@ -46,14 +46,14 @@ Dostopnost je vgrajena že od faze 3, ne dograjena naknadno.
 
 ## Barvni kontrast (WCAG 1.4.3, 1.4.11)
 
-| Element | Prednja barva | Ozadje | Razmerje | Standard |
-|---------|--------------|--------|----------|----------|
-| Besedilo (normalno) | `#1e1e2e` | `#eff1f5` | 14,7:1 | ✓ AA |
-| Gumb — primarni (besedilo) | `#ffffff` | `#1e66f5` | 5,2:1 | ✓ AA |
-| Gumb — sekundarni (besedilo) | `#1e1e2e` | `#dce0e8` | 10,1:1 | ✓ AA |
-| Oznaka stanja "submitted" | `#df8e1d` | `#eff1f5` | 3,1:1 | ✓ AA (velik tekst) |
-| Napaka — besedilo | `#d20f39` | `#eff1f5` | 5,9:1 | ✓ AA |
-| Aktivni nav-link | `#1e66f5` | `#eff1f5` | 5,2:1 | ✓ AA |
+| Element                      | Prednja barva | Ozadje    | Razmerje | Standard           |
+| ---------------------------- | ------------- | --------- | -------- | ------------------ |
+| Besedilo (normalno)          | `#1e1e2e`     | `#eff1f5` | 14,7:1   | ✓ AA               |
+| Gumb — primarni (besedilo)   | `#ffffff`     | `#1e66f5` | 5,2:1    | ✓ AA               |
+| Gumb — sekundarni (besedilo) | `#1e1e2e`     | `#dce0e8` | 10,1:1   | ✓ AA               |
+| Oznaka stanja "submitted"    | `#df8e1d`     | `#eff1f5` | 3,1:1    | ✓ AA (velik tekst) |
+| Napaka — besedilo            | `#d20f39`     | `#eff1f5` | 5,9:1    | ✓ AA               |
+| Aktivni nav-link             | `#1e66f5`     | `#eff1f5` | 5,2:1    | ✓ AA               |
 
 **Ugotovitev:** Vse kombinacije dosegajo ali presegajo zahteve AA.
 
@@ -114,16 +114,16 @@ Dostopnost je vgrajena že od faze 3, ne dograjena naknadno.
 
 Preizkus opravljen z: macOS Sequoia 15.4, Safari 18.4, VoiceOver vklopljen (⌘F5).
 
-| Tok | Rezultat |
-|-----|---------|
-| Odprtje aplikacije | VoiceOver prebere naziv strani ("PrijaviMesto — Seznam prijav") |
-| Skip-link | Dostopen, pravilno preskoči na `<main>` |
-| Navigacijski meni | Povezave pravilno označene z `aria-current="page"` |
-| Seznam prijav | Vsaka kartica brana z naslovom, kategorijo in stanjem |
-| Obrazec za novo prijavo | Vsa polja napovedana, napake brane asertivno |
+| Tok                     | Rezultat                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| Odprtje aplikacije      | VoiceOver prebere naziv strani ("PrijaviMesto — Seznam prijav")               |
+| Skip-link               | Dostopen, pravilno preskoči na `<main>`                                       |
+| Navigacijski meni       | Povezave pravilno označene z `aria-current="page"`                            |
+| Seznam prijav           | Vsaka kartica brana z naslovom, kategorijo in stanjem                         |
+| Obrazec za novo prijavo | Vsa polja napovedana, napake brane asertivno                                  |
 | Kamera (pogovorno okno) | `role="dialog" aria-modal="true"` — VoiceOver ostane znotraj pogovornega okna |
-| Uspešna oddaja | Toast "Prijava uspešno oddana" brana s `role="status"` |
-| Offline banner | Bran takoj ob prehodu brez povezave |
+| Uspešna oddaja          | Toast "Prijava uspešno oddana" brana s `role="status"`                        |
+| Offline banner          | Bran takoj ob prehodu brez povezave                                           |
 
 **Skupna ocena:** Aplikacija je ustrezno dostopna z bralnikom zaslona VoiceOver.
 
@@ -131,11 +131,11 @@ Preizkus opravljen z: macOS Sequoia 15.4, Safari 18.4, VoiceOver vklopljen (⌘F
 
 ## Znane omejitve
 
-| Omejitev | Vzrok | Obhod |
-|----------|-------|-------|
-| Leaflet karta — nekateri aria atributi | Leaflet sam generira `role="application"` brez `aria-label` | Karta vedno pospremljena z enakovrednim besedilnim seznamom |
-| Firefox — Background Sync | Firefox ne implementira Background Sync API | Gumb "Pošlji zdaj" kot ročni nadomestek |
-| iOS Safari — Push API | Push obvestila na iOS zahtevajo nameščeno PWA (dodaj na začetni zaslon) | V navodilih za zagon je opisana pot namestitve |
+| Omejitev                               | Vzrok                                                                   | Obhod                                                       |
+| -------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Leaflet karta — nekateri aria atributi | Leaflet sam generira `role="application"` brez `aria-label`             | Karta vedno pospremljena z enakovrednim besedilnim seznamom |
+| Firefox — Background Sync              | Firefox ne implementira Background Sync API                             | Gumb "Pošlji zdaj" kot ročni nadomestek                     |
+| iOS Safari — Push API                  | Push obvestila na iOS zahtevajo nameščeno PWA (dodaj na začetni zaslon) | V navodilih za zagon je opisana pot namestitve              |
 
 ---
 

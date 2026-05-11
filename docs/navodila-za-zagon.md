@@ -2,13 +2,13 @@
 
 ## Zahteve
 
-| Orodje | Različica | Namen |
-|--------|-----------|-------|
-| Node.js | ≥ 22 LTS | Produkcijski strežnik in razvojna orodja |
-| pnpm | ≥ 9 | Upravljanje paketov (workspace) |
-| Bun | ≥ 1.1 | Strežniška varianta B (neobvezno) |
-| Deno | ≥ 2.0 | Strežniška varianta C (neobvezno) |
-| k6 | ≥ 0.55 | Obremenilni testi (neobvezno) |
+| Orodje  | Različica | Namen                                    |
+| ------- | --------- | ---------------------------------------- |
+| Node.js | ≥ 22 LTS  | Produkcijski strežnik in razvojna orodja |
+| pnpm    | ≥ 9       | Upravljanje paketov (workspace)          |
+| Bun     | ≥ 1.1     | Strežniška varianta B (neobvezno)        |
+| Deno    | ≥ 2.0     | Strežniška varianta C (neobvezno)        |
+| k6      | ≥ 0.55    | Obremenilni testi (neobvezno)            |
 
 ## Hitra namestitev
 
@@ -44,6 +44,7 @@ DB_PATH=./fieldfix.db
 ```
 
 > Za produkcijo generiraj stalne VAPID ključe:
+>
 > ```bash
 > node -e "const wp=require('web-push'); console.log(JSON.stringify(wp.generateVAPIDKeys(),null,2));"
 > ```

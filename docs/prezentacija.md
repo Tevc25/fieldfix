@@ -19,11 +19,12 @@
 
 ## 0:00 – 0:45 | Uvod in ideja (slide 3)
 
-> *"Živimo v pametnih mestih, pa so komunalne okvare prijavljene s klicem na telefonsko številko ali z emailom. PrijaviMesto to reši."*
+> _"Živimo v pametnih mestih, pa so komunalne okvare prijavljene s klicem na telefonsko številko ali z emailom. PrijaviMesto to reši."_
 
 **Pokaži:** Odpri aplikacijo. Pokaži seznam prijav z markerji na karti Maribora.
 
 **Ključne točke:**
+
 - Aplikacija deluje brez namestitve iz trgovine — to je PWA
 - Deluje brez interneta — prijava se shrani lokalno
 - Ciljna skupina: vsi občani + komunalni delavci
@@ -33,12 +34,14 @@
 ## 0:45 – 2:30 | PWA osnove (slide 3)
 
 **Pokaži v brskalniku:**
+
 1. Klikni ikono "Namesti" v naslovni vrstici Chrome → pokaži install prompt
 2. Odpri DevTools → Application → Manifest → pokaži `name`, `lang: sl`, `display: standalone`, ikone
 3. Application → Service Workers → pokaži, da je SW registriran in aktiven
 4. Application → Cache Storage → pokaži predpomnjene datoteke (app shell)
 
 **Povej:**
+
 - Manifest definira, kako aplikacija izgleda, ko je nameščena
 - `display: standalone` — brez brskalniških gumbov, kot nativna aplikacija
 - Ikone v treh velikostih, vključno z maskable (Android adaptive icons)
@@ -49,17 +52,18 @@
 
 **Pokaži v kodi** (`client/src/sw.ts`):
 
-> *"Service Worker je ključni element PWA. Vsak tip resursa ima svojo strategijo."*
+> _"Service Worker je ključni element PWA. Vsak tip resursa ima svojo strategijo."_
 
-| Resurs | Strategija | Zakaj |
-|--------|-----------|-------|
-| App shell | CacheFirst + precache | Takojšen zagon, posodobitev ob novem SW |
-| OSM ploščice | StaleWhileRevalidate | Sveže, a brez čakanja |
-| GET /api/reports | NetworkFirst | Sveže ko online, zadnje znano ko offline |
-| POST /api/reports | NetworkOnly + Background Sync | Mora biti poslano |
-| Nominatim | CacheFirst 30 dni | Isti GPS → isti naslov |
+| Resurs            | Strategija                    | Zakaj                                    |
+| ----------------- | ----------------------------- | ---------------------------------------- |
+| App shell         | CacheFirst + precache         | Takojšen zagon, posodobitev ob novem SW  |
+| OSM ploščice      | StaleWhileRevalidate          | Sveže, a brez čakanja                    |
+| GET /api/reports  | NetworkFirst                  | Sveže ko online, zadnje znano ko offline |
+| POST /api/reports | NetworkOnly + Background Sync | Mora biti poslano                        |
+| Nominatim         | CacheFirst 30 dni             | Isti GPS → isti naslov                   |
 
 **Pokaži offline:**
+
 1. DevTools → Network → "Offline"
 2. Osveži stran — app shell se naloži iz predpomnilnika
 3. Odpri `/new` — obrazec je dosegljiv brez interneta
@@ -70,6 +74,7 @@
 ## 4:30 – 5:45 | Background Sync + Push obvestila (slide 7)
 
 **Demo Background Sync:**
+
 1. Ostani v "Offline" načinu
 2. Izpolni obrazec (ime okvare, kategorija, GPS koordinate)
 3. Pritisni "Oddaj prijavo" — aplikacija pokaže potrditev, da je shranjena
@@ -78,10 +83,12 @@
 6. Prijava izgine iz IndexedDB — je bila poslana
 
 **Povej:**
+
 - Firefox ne podpira Background Sync → gumb "Pošlji zdaj" kot ročni nadomestek
 - `sync` event se sproži ob vzpostavitvi omrežja, tudi če je brskalnik zaprt
 
 **Demo Push obvestila:**
+
 1. Klikni "Omogoči obvestila" v aplikaciji → pokaži permission dialog
 2. V drugi zavihku pošlji PATCH na strežnik (sprememba statusa):
    ```bash
@@ -114,7 +121,7 @@
 
 **Pokaži grafikone** (`benchmarks/results/`):
 
-> *"Implementiral sem tri strežniške variante z enakimi API-ji. Rezultati so izmerjeni, ne opisni."*
+> _"Implementiral sem tri strežniške variante z enakimi API-ji. Rezultati so izmerjeni, ne opisni."_
 
 - **Prepustnost:** Node 7 785 req/s ≈ Bun 7 658 req/s — praktično enako
 - **Zakasnitev p95:** Node 11,8 ms vs Bun 12,9 ms — obadva pod 13 ms pri 100 VU
@@ -129,15 +136,18 @@
 ## 8:15 – 9:15 | Testiranje in dostopnost (slide 10–11)
 
 **Pokaži v terminalu:**
+
 ```bash
 pnpm --filter server-node test   # 32 testov
 pnpm --filter client test        # 29 testov
 ```
 
 **Pokaži axe-core izhod** (iz Playwright HTML poročila):
+
 > 0 accessibility violations na vsakem pogledu
 
 **WCAG 2.2 AA — ključne točke:**
+
 - Semantični HTML5, en `<h1>` na pogled
 - Skip-link na `<main>` (pritisni Tab na začetku strani)
 - Kontrast ≥ 4,5:1 za vse besedilo
@@ -146,6 +156,7 @@ pnpm --filter client test        # 29 testov
 - VoiceOver (macOS): pravilno prebere vse navigacijske elemente in napake pri validaciji
 
 **Lighthouse CI** (`.lighthouserc.json`):
+
 - PWA: 100, Zmogljivost: ≥ 90, Dostopnost: ≥ 95, Najboljše prakse: ≥ 95
 
 ---
@@ -154,17 +165,17 @@ pnpm --filter client test        # 29 testov
 
 **Povzetek tega, kar smo prikazali:**
 
-| Zahteva (slide) | Implementacija |
-|-----------------|---------------|
-| PWA osnove (3) | Manifest, SW, installable, offline, responsive |
-| SW strategije (5–6) | 7 strategij, vsaka dokumentirana z razlogom |
-| Background Sync + Push (7) | Offline vrsta → auto-sync, VAPID push |
-| Sodobni API-ji (8) | 7 API-jev, vsak z graceful degradation |
-| Primerjava strežnikov (9) | 3 variante, izmerjene z k6, grafikoni |
-| Testiranje (10) | Vitest 61 testov, Playwright E2E, axe-core |
-| Dostopnost (11) | WCAG 2.2 AA, VoiceOver preizkušeno |
+| Zahteva (slide)            | Implementacija                                 |
+| -------------------------- | ---------------------------------------------- |
+| PWA osnove (3)             | Manifest, SW, installable, offline, responsive |
+| SW strategije (5–6)        | 7 strategij, vsaka dokumentirana z razlogom    |
+| Background Sync + Push (7) | Offline vrsta → auto-sync, VAPID push          |
+| Sodobni API-ji (8)         | 7 API-jev, vsak z graceful degradation         |
+| Primerjava strežnikov (9)  | 3 variante, izmerjene z k6, grafikoni          |
+| Testiranje (10)            | Vitest 61 testov, Playwright E2E, axe-core     |
+| Dostopnost (11)            | WCAG 2.2 AA, VoiceOver preizkušeno             |
 
-> *"Aplikacija je dostopna na GitHubu. Hvala za pozornost — vprašanja?"*
+> _"Aplikacija je dostopna na GitHubu. Hvala za pozornost — vprašanja?"_
 
 ---
 
