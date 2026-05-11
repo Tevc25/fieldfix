@@ -128,7 +128,7 @@ test.describe('Offline mode', () => {
     await page.goto('/prijavi');
     await page.waitForTimeout(500);
     // Look for any sync / submit button with relevant text
-    const syncBtn = page.getByRole('button', { name: /pošlji|submit|sync/i });
+    const syncBtn = page.getByRole('button', { name: /oddaj|pošlji|submit|sync/i });
     await expect(syncBtn.first()).toBeVisible();
   });
 });

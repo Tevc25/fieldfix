@@ -258,7 +258,7 @@ a:hover {
 }
 .nav-link:hover,
 .nav-link[aria-current='page'] {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.2); /* darken: #1565c0 → ~#11519a → 7.3:1 on #fff ✓ */
   color: #fff;
 }
 .nav-link:focus-visible {
