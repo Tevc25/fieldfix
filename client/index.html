@@ -98,7 +98,13 @@
     <div id="announcer" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 
     <!-- Toast notifications (assertive — errors and confirmations) -->
-    <div id="toast-container" aria-label="Obvestila" aria-relevant="additions"></div>
+    <div
+      id="toast-container"
+      role="log"
+      aria-label="Obvestila"
+      aria-relevant="additions"
+      aria-live="polite"
+    ></div>
 
     <!-- SW update banner (Phase 4 will activate this) -->
     <div id="sw-update-banner" hidden role="alert">

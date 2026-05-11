@@ -39,15 +39,15 @@ test.describe('Online report submission', () => {
     );
   });
 
-  test('submit form is accessible via /new route', async ({ page }) => {
-    await page.goto('/new');
+  test('submit form is accessible via /prijavi route', async ({ page }) => {
+    await page.goto('/prijavi');
     await page.waitForTimeout(300);
     const form = page.locator('form');
     await expect(form).toBeVisible();
   });
 
   test('submit form has labeled inputs', async ({ page }) => {
-    await page.goto('/new');
+    await page.goto('/prijavi');
     await page.waitForTimeout(300);
     // Every input/select/textarea must have an accessible label
     const inputs = page.locator(
@@ -93,7 +93,7 @@ test.describe('Offline mode', () => {
     await expect(body).toBeVisible();
   });
 
-  test('/new form is available offline (no network needed for render)', async ({
+  test('/prijavi form is available offline (no network needed for render)', async ({
     page,
     context,
   }) => {
@@ -105,7 +105,7 @@ test.describe('Offline mode', () => {
         body: '{"data":[],"total":0,"page":1,"pageSize":20}',
       }),
     );
-    await page.goto('/new');
+    await page.goto('/prijavi');
     await page.waitForTimeout(500);
 
     // Go offline
@@ -125,7 +125,7 @@ test.describe('Offline mode', () => {
         body: '{"data":[],"total":0,"page":1,"pageSize":20}',
       }),
     );
-    await page.goto('/new');
+    await page.goto('/prijavi');
     await page.waitForTimeout(500);
     // Look for any sync / submit button with relevant text
     const syncBtn = page.getByRole('button', { name: /pošlji|submit|sync/i });

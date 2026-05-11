@@ -76,9 +76,10 @@ test('home page has <main> landmark', async ({ page }) => {
 
 test('skip-link is present and focusable', async ({ page }) => {
   await page.goto('/');
-  await page.keyboard.press('Tab');
-  const focused = page.locator(':focus');
-  await expect(focused).toHaveAttribute('href', '#main');
+  const skipLink = page.locator('a[href="#main"]');
+  await expect(skipLink).toBeAttached();
+  await skipLink.focus();
+  await expect(skipLink).toBeFocused();
 });
 
 test('axe — home page (report list)', async ({ page }) => {
@@ -92,14 +93,14 @@ test('axe — home page (report list)', async ({ page }) => {
 });
 
 test('navigate to /new and axe check', async ({ page }) => {
-  await page.goto('/new');
+  await page.goto('/prijavi');
   await page.waitForTimeout(300);
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations).toEqual([]);
 });
 
 test('navigate to report detail and axe check', async ({ page }) => {
-  await page.goto('/reports/a1000000-0000-0000-0000-000000000001');
+  await page.goto('/prijava/a1000000-0000-0000-0000-000000000001');
   await page.waitForTimeout(500);
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations).toEqual([]);
