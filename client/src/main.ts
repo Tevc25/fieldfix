@@ -4,6 +4,7 @@ import { defineRoute, initRouter } from './router.ts';
 import { createReportListView } from './components/report-list.ts';
 import { createReportFormView } from './components/report-form.ts';
 import { createReportDetailView } from './components/report-detail.ts';
+import { createAdminPanelView } from './components/admin-panel.ts';
 import { showToast } from './components/toast-manager.ts';
 import { countPending } from './db/queue.ts';
 
@@ -11,6 +12,7 @@ import { countPending } from './db/queue.ts';
 defineRoute('/', () => createReportListView());
 defineRoute('/prijavi', () => createReportFormView());
 defineRoute('/prijava/:id', ({ id }) => createReportDetailView(id));
+defineRoute('/admin', () => createAdminPanelView());
 
 // ── SW registration ────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator && import.meta.env.PROD) {

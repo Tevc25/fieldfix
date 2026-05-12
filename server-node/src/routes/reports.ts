@@ -274,6 +274,28 @@ const reportRoutes: FastifyPluginAsync<{ db: Database }> = async (fastify, opts)
 
     return reply.status(200).send(rowToReport(updated));
   });
+
+  // ── DELETE /api/reports/:id ───────────────────────────────────────────────
+  fastify.delete<{ Params: { id: string } }>('/api/reports/:id', async (request, reply) => {
+    const token = request.headers['x-admin-token'];
+    if (token !== ADMIN_TOKEN) {
+      return reply.status(401).send({
+        error: 'Unauthorized',
+        message: 'Neveljaven ali manjkajoč admin žeton',
+      });
+    }
+
+    const { id } = request.params;
+    const row = db.prepare('SELECT id FROM reports WHERE id = ?').get(id);
+    if (!row) {
+      return reply.status(404).send({ error: 'NotFound', message: 'Prijava ni bila najdena' });
+    }
+
+    db.prepare('DELETE FROM status_history WHERE report_id = ?').run(id);
+    db.prepare('DELETE FROM reports WHERE id = ?').run(id);
+
+    return reply.status(204).send();
+  });
 };
 
 export default reportRoutes;

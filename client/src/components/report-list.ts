@@ -5,7 +5,6 @@ import type { Report, ReportStatus } from '@fieldfix/shared';
 import { navigate } from '../router.ts';
 import { createPushPanel } from './push-panel.ts';
 
-// Fix Leaflet marker icon paths broken by bundlers
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -34,7 +33,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: 'Drugo',
 };
 
-// Network Information API — detect slow connections to skip map tiles
+const CATEGORY_ICONS: Record<string, string> = {
+  pothole: '🕳️',
+  broken_streetlight: '💡',
+  graffiti: '🎨',
+  illegal_dumping: '🗑️',
+  damaged_sign: '🚧',
+  other: '⚠️',
+};
+
 type EffectiveType = 'slow-2g' | '2g' | '3g' | '4g';
 interface NetworkInformation extends EventTarget {
   readonly effectiveType: EffectiveType;
@@ -48,6 +55,14 @@ function getEffectiveType(): EffectiveType | null {
 function isSlowConnection(): boolean {
   const et = getEffectiveType();
   return et === 'slow-2g' || et === '2g';
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('sl-SI', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 export function createReportListView(): HTMLElement {
@@ -71,9 +86,34 @@ export function createReportListView(): HTMLElement {
     document.title = 'Prijave — PrijaviMesto';
     const slowNet = isSlowConnection();
 
+    const total = reports.length;
+    const inReview = reports.filter((r) => r.status === 'in_review').length;
+    const resolved = reports.filter((r) => r.status === 'resolved').length;
+    const submitted = reports.filter((r) => r.status === 'submitted').length;
+
     render(
       html`
         <h1>Prijave</h1>
+
+        <!-- Stats strip -->
+        <div class="stats-strip" role="list" aria-label="Statistika prijav">
+          <div class="stat-card" role="listitem">
+            <div class="stat-card__value">${total}</div>
+            <div class="stat-card__label">Skupaj</div>
+          </div>
+          <div class="stat-card" role="listitem">
+            <div class="stat-card__value">${submitted}</div>
+            <div class="stat-card__label">Čakajo</div>
+          </div>
+          <div class="stat-card" role="listitem">
+            <div class="stat-card__value">${inReview}</div>
+            <div class="stat-card__label">V obravnavi</div>
+          </div>
+          <div class="stat-card" role="listitem">
+            <div class="stat-card__value">${resolved}</div>
+            <div class="stat-card__label">Rešene</div>
+          </div>
+        </div>
 
         ${slowNet
           ? html`<div class="alert alert--info" role="status">
@@ -82,9 +122,6 @@ export function createReportListView(): HTMLElement {
                 prihranek podatkov.
               </p>
             </div>`
-          : ''}
-        ${slowNet
-          ? ''
           : html`<div
               class="map-container"
               id="report-map"
@@ -92,52 +129,8 @@ export function createReportListView(): HTMLElement {
               role="img"
             ></div>`}
 
-        <h2>Seznam vseh prijav</h2>
-        <div class="data-table-wrap">
-          <table class="data-table" aria-label="Tabela prijav">
-            <thead>
-              <tr>
-                <th scope="col">Naslov</th>
-                <th scope="col">Kategorija</th>
-                <th scope="col">Status</th>
-                <th scope="col">Lokacija</th>
-                <th scope="col">Datum</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${reports.length === 0
-                ? html`<tr>
-                    <td colspan="5">Ni prijav za prikaz.</td>
-                  </tr>`
-                : reports.map(
-                    (r) => html`
-                      <tr>
-                        <td>
-                          <a
-                            href="/prijava/${r.id}"
-                            @click=${(e: Event) => {
-                              e.preventDefault();
-                              navigate(`/prijava/${r.id}`);
-                            }}
-                            >${r.title}</a
-                          >
-                        </td>
-                        <td>${CATEGORY_LABELS[r.category] ?? r.category}</td>
-                        <td>
-                          <span class="status-badge status-badge--${r.status}">
-                            ${STATUS_LABELS[r.status]}
-                          </span>
-                        </td>
-                        <td>${r.address ?? `${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}`}</td>
-                        <td>${new Date(r.createdAt).toLocaleDateString('sl-SI')}</td>
-                      </tr>
-                    `,
-                  )}
-            </tbody>
-          </table>
-        </div>
-
-        <div class="form-actions">
+        <div class="reports-section__header">
+          <h2 style="margin:0">Vse prijave</h2>
           <a
             href="/prijavi"
             class="btn btn--primary"
@@ -149,6 +142,59 @@ export function createReportListView(): HTMLElement {
             + Nova prijava
           </a>
         </div>
+
+        ${reports.length === 0
+          ? html`<div class="empty-state">
+              <div class="empty-state__icon" aria-hidden="true">📋</div>
+              <p class="empty-state__title">Ni prijav za prikaz</p>
+              <p>Bodite prvi, ki prijavite težavo v vašem mestu.</p>
+              <a
+                href="/prijavi"
+                class="btn btn--primary"
+                @click=${(e: Event) => {
+                  e.preventDefault();
+                  navigate('/prijavi');
+                }}
+                >+ Nova prijava</a
+              >
+            </div>`
+          : html`<div class="report-cards" role="list">
+              ${reports.map(
+                (r) => html`
+                  <a
+                    href="/prijava/${r.id}"
+                    class="report-card"
+                    role="listitem"
+                    aria-label="${r.title}, status: ${STATUS_LABELS[r.status]}"
+                    @click=${(e: Event) => {
+                      e.preventDefault();
+                      navigate(`/prijava/${r.id}`);
+                    }}
+                  >
+                    <div class="report-card__top">
+                      <span class="category-badge category-badge--${r.category}" aria-hidden="true">
+                        ${CATEGORY_ICONS[r.category] ?? '📌'}
+                        ${CATEGORY_LABELS[r.category] ?? r.category}
+                      </span>
+                      <span class="status-badge status-badge--${r.status}">
+                        ${STATUS_LABELS[r.status]}
+                      </span>
+                    </div>
+                    <p class="report-card__title">${r.title}</p>
+                    ${r.address
+                      ? html`<p class="report-card__location">
+                          <span aria-hidden="true">📍</span>
+                          <span>${r.address}</span>
+                        </p>`
+                      : ''}
+                    <div class="report-card__footer">
+                      <time datetime="${r.createdAt}">${formatDate(r.createdAt)}</time>
+                      <span class="report-card__arrow" aria-hidden="true">→</span>
+                    </div>
+                  </a>
+                `,
+              )}
+            </div>`}
       `,
       section,
     );

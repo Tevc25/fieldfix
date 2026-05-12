@@ -2,6 +2,7 @@ import { html, render } from 'lit-html';
 import { getReport, ApiError } from '../api/reports.ts';
 import type { ReportDetail, ReportStatus, StatusHistoryEntry } from '@fieldfix/shared';
 import { showToast } from './toast-manager.ts';
+import { navigate } from '../router.ts';
 
 const STATUS_LABELS: Record<ReportStatus, string> = {
   submitted: 'Oddano',
@@ -19,271 +20,156 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: 'Drugo',
 };
 
-// Valid status transitions (mirrors server-side FSM)
-const TRANSITIONS: Record<ReportStatus, ReportStatus[]> = {
-  submitted: ['in_review', 'rejected'],
-  in_review: ['resolved', 'rejected'],
-  resolved: [],
-  rejected: [],
+const CATEGORY_ICONS: Record<string, string> = {
+  pothole: '🕳️',
+  broken_streetlight: '💡',
+  graffiti: '🎨',
+  illegal_dumping: '🗑️',
+  damaged_sign: '🚧',
+  other: '⚠️',
 };
 
-async function patchStatus(
-  id: string,
-  status: ReportStatus,
-  note: string,
-  adminToken: string,
-): Promise<void> {
-  const res = await fetch(`/api/reports/${encodeURIComponent(id)}/status`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Admin-Token': adminToken,
-    },
-    body: JSON.stringify({ status, note: note || undefined }),
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('sl-SI', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
-  if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { message?: string };
-    throw new ApiError(res.status, body.message ?? `HTTP ${res.status}`);
-  }
 }
 
 export function createReportDetailView(id: string): HTMLElement {
   const section = document.createElement('section');
   section.setAttribute('aria-labelledby', 'detail-heading');
 
-  // Admin panel state
-  let adminOpen = false;
-  let adminToken = localStorage.getItem('fieldfix-admin-token') ?? '';
-  let selectedStatus: ReportStatus | '' = '';
-  let adminNote = '';
-  let adminSubmitting = false;
-
   function renderDetail(report: ReportDetail): void {
     document.title = `${report.title} — PrijaviMesto`;
-
     const shareUrl = `${location.origin}/prijava/${report.id}`;
-    const nextStatuses = TRANSITIONS[report.status];
+    const icon = CATEGORY_ICONS[report.category] ?? '📌';
+    const categoryLabel = CATEGORY_LABELS[report.category] ?? report.category;
 
     render(
       html`
-        <nav aria-label="Krušna pot">
-          <a href="/">← Vse prijave</a>
-        </nav>
-        <article>
-          <header style="margin-bottom:1.5rem">
-            <h1 id="detail-heading">${report.title}</h1>
-            <span class="status-badge status-badge--${report.status}">
-              ${STATUS_LABELS[report.status]}
-            </span>
-          </header>
-
-          <dl>
-            <div style="margin-bottom:1rem">
-              <dt style="font-weight:700">Kategorija</dt>
-              <dd>${CATEGORY_LABELS[report.category] ?? report.category}</dd>
-            </div>
-            <div style="margin-bottom:1rem">
-              <dt style="font-weight:700">Opis</dt>
-              <dd>${report.description}</dd>
-            </div>
-            <div style="margin-bottom:1rem">
-              <dt style="font-weight:700">Lokacija</dt>
-              <dd>${report.address ?? `${report.lat.toFixed(6)}, ${report.lng.toFixed(6)}`}</dd>
-            </div>
-            <div style="margin-bottom:1rem">
-              <dt style="font-weight:700">Datum prijave</dt>
-              <dd>${new Date(report.createdAt).toLocaleString('sl-SI')}</dd>
-            </div>
-            ${report.photoUrl
-              ? html`<div style="margin-bottom:1rem">
-                  <dt style="font-weight:700">Fotografija</dt>
-                  <dd>
-                    <img
-                      src="${report.photoUrl}"
-                      alt="Fotografija prijave: ${report.title}"
-                      style="max-width:100%;max-height:400px;border-radius:.5rem;object-fit:cover"
-                    />
-                  </dd>
-                </div>`
-              : ''}
-            <div style="margin-bottom:1rem">
-              <dt style="font-weight:700">ID prijave</dt>
-              <dd>
-                <code>${report.id}</code>
-                <button
-                  type="button"
-                  class="btn btn--secondary"
-                  style="margin-left:.5rem;padding:.25rem .75rem;font-size:.875rem"
-                  @click=${async () => {
-                    try {
-                      await navigator.clipboard.writeText(report.id);
-                      showToast('ID prijave kopiran v odložišče', { type: 'success' });
-                    } catch {
-                      showToast('Kopiranje ni uspelo', { type: 'error' });
-                    }
-                  }}
-                >
-                  Kopiraj ID
-                </button>
-              </dd>
-            </div>
-          </dl>
-
-          ${'share' in navigator
-            ? html`<button
-                type="button"
-                class="btn btn--secondary"
-                @click=${async () => {
-                  try {
-                    await navigator.share({ title: report.title, url: shareUrl });
-                  } catch {
-                    // User cancelled or share failed — no action needed
-                  }
-                }}
-              >
-                Deli prijavo
-              </button>`
-            : ''}
-
-          <section aria-labelledby="history-heading" style="margin-top:2rem">
-            <h2 id="history-heading">Zgodovina statusov</h2>
-            <ol aria-label="Spremembe statusa">
-              ${report.statusHistory.map(
-                (h: StatusHistoryEntry) => html`
-                  <li style="margin-bottom:.75rem">
-                    <strong>${STATUS_LABELS[h.status]}</strong>
-                    <time datetime="${h.changedAt}">
-                      — ${new Date(h.changedAt).toLocaleString('sl-SI')}
-                    </time>
-                    ${h.note ? html`<br /><em>${h.note}</em>` : ''}
-                  </li>
-                `,
-              )}
-            </ol>
-          </section>
-
-          <!-- Admin panel -->
-          <section
-            aria-labelledby="admin-heading"
-            style="margin-top:2rem;border-top:1px solid var(--c-surface-2);padding-top:1.5rem"
+        <nav aria-label="Krušna pot" style="margin-bottom:var(--sp-4)">
+          <a
+            href="/"
+            class="btn btn--secondary btn--sm"
+            @click=${(e: Event) => {
+              e.preventDefault();
+              navigate('/');
+            }}
+            >← Nazaj na prijave</a
           >
-            <h2 id="admin-heading" style="font-size:1rem;color:var(--c-text-secondary)">
-              Administracija
-            </h2>
-            ${!adminOpen
+        </nav>
+
+        <!-- Hero card -->
+        <div class="detail-hero">
+          <div class="detail-hero__header">
+            <span class="detail-hero__icon" aria-hidden="true">${icon}</span>
+            <div class="detail-hero__meta">
+              <h1 id="detail-heading" class="detail-hero__title">${report.title}</h1>
+              <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center">
+                <span class="status-badge status-badge--${report.status}">
+                  ${STATUS_LABELS[report.status]}
+                </span>
+                <span class="category-badge category-badge--${report.category}">
+                  ${categoryLabel}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap">
+            ${'share' in navigator
               ? html`<button
                   type="button"
                   class="btn btn--secondary btn--sm"
-                  @click=${() => {
-                    adminOpen = true;
-                    selectedStatus = nextStatuses[0] ?? '';
-                    renderDetail(report);
+                  @click=${async () => {
+                    try {
+                      await navigator.share({ title: report.title, url: shareUrl });
+                    } catch {
+                      /* cancelled */
+                    }
                   }}
                 >
-                  Spremeni status
+                  Deli prijavo
                 </button>`
-              : html`
-                  <form
-                    @submit=${async (e: Event) => {
-                      e.preventDefault();
-                      if (!selectedStatus) return;
-                      adminSubmitting = true;
-                      renderDetail(report);
-                      try {
-                        if (adminToken) localStorage.setItem('fieldfix-admin-token', adminToken);
-                        await patchStatus(report.id, selectedStatus, adminNote, adminToken);
-                        showToast(`Status spremenjen v: ${STATUS_LABELS[selectedStatus]}`, {
-                          type: 'success',
-                        });
-                        adminOpen = false;
-                        adminNote = '';
-                        selectedStatus = '';
-                        const updated = await getReport(id);
-                        renderDetail(updated);
-                      } catch (err) {
-                        adminSubmitting = false;
-                        const msg = err instanceof ApiError ? err.message : 'Napaka';
-                        showToast(msg, { type: 'error' });
-                        renderDetail(report);
-                      }
-                    }}
-                    style="display:flex;flex-direction:column;gap:.75rem;max-width:28rem"
-                  >
-                    ${nextStatuses.length === 0
-                      ? html`<p style="color:var(--c-text-secondary);font-size:.875rem">
-                          Status je končen — nadaljnje spremembe niso možne.
-                        </p>`
-                      : html`
-                          <div class="form-group" style="margin-bottom:0">
-                            <label class="form-label" for="admin-token">Admin žeton</label>
-                            <input
-                              class="form-input"
-                              id="admin-token"
-                              type="password"
-                              autocomplete="current-password"
-                              placeholder="dev-admin-token-fieldfix"
-                              .value=${adminToken}
-                              @input=${(e: Event) => {
-                                adminToken = (e.target as HTMLInputElement).value;
-                              }}
-                            />
-                          </div>
-                          <div class="form-group" style="margin-bottom:0">
-                            <label class="form-label" for="new-status">Nov status</label>
-                            <select
-                              class="form-select"
-                              id="new-status"
-                              @change=${(e: Event) => {
-                                selectedStatus = (e.target as HTMLSelectElement)
-                                  .value as ReportStatus;
-                              }}
-                            >
-                              ${nextStatuses.map(
-                                (s) =>
-                                  html`<option value=${s} ?selected=${selectedStatus === s}>
-                                    ${STATUS_LABELS[s]}
-                                  </option>`,
-                              )}
-                            </select>
-                          </div>
-                          <div class="form-group" style="margin-bottom:0">
-                            <label class="form-label" for="admin-note">Opomba (neobvezno)</label>
-                            <input
-                              class="form-input"
-                              id="admin-note"
-                              type="text"
-                              placeholder="Npr. Delavci bodo prišli v torek."
-                              .value=${adminNote}
-                              @input=${(e: Event) => {
-                                adminNote = (e.target as HTMLInputElement).value;
-                              }}
-                            />
-                          </div>
-                          <div style="display:flex;gap:.5rem">
-                            <button
-                              type="submit"
-                              class="btn btn--primary btn--sm"
-                              ?disabled=${adminSubmitting}
-                              aria-busy=${adminSubmitting ? 'true' : 'false'}
-                            >
-                              ${adminSubmitting ? 'Pošiljam…' : 'Potrdi spremembo'}
-                            </button>
-                            <button
-                              type="button"
-                              class="btn btn--secondary btn--sm"
-                              @click=${() => {
-                                adminOpen = false;
-                                renderDetail(report);
-                              }}
-                            >
-                              Prekliči
-                            </button>
-                          </div>
-                        `}
-                  </form>
-                `}
-          </section>
-        </article>
+              : ''}
+            <button
+              type="button"
+              class="btn btn--secondary btn--sm"
+              @click=${async () => {
+                try {
+                  await navigator.clipboard.writeText(shareUrl);
+                  showToast('Povezava kopirana', { type: 'success' });
+                } catch {
+                  showToast('Kopiranje ni uspelo', { type: 'error' });
+                }
+              }}
+            >
+              Kopiraj povezavo
+            </button>
+          </div>
+        </div>
+
+        <!-- Details grid -->
+        <div class="detail-grid">
+          <div class="detail-field">
+            <div class="detail-field__label">Opis težave</div>
+            <div class="detail-field__value">${report.description}</div>
+          </div>
+          <div class="detail-field">
+            <div class="detail-field__label">Lokacija</div>
+            <div class="detail-field__value">
+              ${report.address
+                ? html`<span>📍 ${report.address}</span>`
+                : html`<span>📍 ${report.lat.toFixed(5)}, ${report.lng.toFixed(5)}</span>`}
+            </div>
+          </div>
+          <div class="detail-field">
+            <div class="detail-field__label">Datum prijave</div>
+            <div class="detail-field__value">
+              <time datetime="${report.createdAt}">${formatDateTime(report.createdAt)}</time>
+            </div>
+          </div>
+          <div class="detail-field">
+            <div class="detail-field__label">Zadnja posodobitev</div>
+            <div class="detail-field__value">
+              <time datetime="${report.updatedAt}">${formatDateTime(report.updatedAt)}</time>
+            </div>
+          </div>
+          ${report.photoUrl
+            ? html`<div class="detail-field detail-field--full">
+                <div class="detail-field__label">Fotografija</div>
+                <div class="detail-field__value" style="margin-top:var(--sp-2)">
+                  <img
+                    src="${report.photoUrl}"
+                    alt="Fotografija prijave: ${report.title}"
+                    style="max-width:100%;max-height:400px;border-radius:var(--radius-md);object-fit:cover"
+                  />
+                </div>
+              </div>`
+            : ''}
+        </div>
+
+        <!-- Status history timeline -->
+        <section aria-labelledby="history-heading">
+          <h2 id="history-heading" style="margin-bottom:var(--sp-4)">Potek obravnave</h2>
+          <ol class="timeline" aria-label="Spremembe statusa">
+            ${report.statusHistory.map(
+              (h: StatusHistoryEntry) => html`
+                <li class="timeline__item">
+                  <span class="timeline__dot timeline__dot--${h.status}" aria-hidden="true"></span>
+                  <div class="timeline__status">${STATUS_LABELS[h.status]}</div>
+                  <time class="timeline__date" datetime="${h.changedAt}">
+                    ${formatDateTime(h.changedAt)}
+                  </time>
+                  ${h.note ? html`<p class="timeline__note">${h.note}</p>` : ''}
+                </li>
+              `,
+            )}
+          </ol>
+        </section>
       `,
       section,
     );
@@ -291,7 +177,23 @@ export function createReportDetailView(id: string): HTMLElement {
 
   function renderError(msg: string): void {
     document.title = 'Napaka — PrijaviMesto';
-    render(html`<div class="alert alert--error" role="alert"><p>${msg}</p></div>`, section);
+    render(
+      html`
+        <nav aria-label="Krušna pot" style="margin-bottom:var(--sp-4)">
+          <a
+            href="/"
+            class="btn btn--secondary btn--sm"
+            @click=${(e: Event) => {
+              e.preventDefault();
+              navigate('/');
+            }}
+            >← Nazaj na prijave</a
+          >
+        </nav>
+        <div class="alert alert--error" role="alert"><p>${msg}</p></div>
+      `,
+      section,
+    );
   }
 
   getReport(id)

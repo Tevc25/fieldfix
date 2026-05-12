@@ -34,7 +34,7 @@ export const ListQuerySchema = z.object({
     .regex(/^-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?$/)
     .optional(),
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  pageSize: z.coerce.number().int().min(1).max(1000).default(20),
 });
 
 // Valid status transitions: submitted→in_review, in_review→resolved|rejected
