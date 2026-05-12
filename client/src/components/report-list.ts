@@ -158,43 +158,47 @@ export function createReportListView(): HTMLElement {
                 >+ Nova prijava</a
               >
             </div>`
-          : html`<div class="report-cards" role="list">
+          : html`<ul class="report-cards">
               ${reports.map(
                 (r) => html`
-                  <a
-                    href="/prijava/${r.id}"
-                    class="report-card"
-                    role="listitem"
-                    aria-label="${r.title}, status: ${STATUS_LABELS[r.status]}"
-                    @click=${(e: Event) => {
-                      e.preventDefault();
-                      navigate(`/prijava/${r.id}`);
-                    }}
-                  >
-                    <div class="report-card__top">
-                      <span class="category-badge category-badge--${r.category}" aria-hidden="true">
-                        ${CATEGORY_ICONS[r.category] ?? '📌'}
-                        ${CATEGORY_LABELS[r.category] ?? r.category}
-                      </span>
-                      <span class="status-badge status-badge--${r.status}">
-                        ${STATUS_LABELS[r.status]}
-                      </span>
-                    </div>
-                    <p class="report-card__title">${r.title}</p>
-                    ${r.address
-                      ? html`<p class="report-card__location">
-                          <span aria-hidden="true">📍</span>
-                          <span>${r.address}</span>
-                        </p>`
-                      : ''}
-                    <div class="report-card__footer">
-                      <time datetime="${r.createdAt}">${formatDate(r.createdAt)}</time>
-                      <span class="report-card__arrow" aria-hidden="true">→</span>
-                    </div>
-                  </a>
+                  <li>
+                    <a
+                      href="/prijava/${r.id}"
+                      class="report-card"
+                      aria-label="${r.title}, status: ${STATUS_LABELS[r.status]}"
+                      @click=${(e: Event) => {
+                        e.preventDefault();
+                        navigate(`/prijava/${r.id}`);
+                      }}
+                    >
+                      <div class="report-card__top">
+                        <span
+                          class="category-badge category-badge--${r.category}"
+                          aria-hidden="true"
+                        >
+                          ${CATEGORY_ICONS[r.category] ?? '📌'}
+                          ${CATEGORY_LABELS[r.category] ?? r.category}
+                        </span>
+                        <span class="status-badge status-badge--${r.status}">
+                          ${STATUS_LABELS[r.status]}
+                        </span>
+                      </div>
+                      <p class="report-card__title">${r.title}</p>
+                      ${r.address
+                        ? html`<p class="report-card__location">
+                            <span aria-hidden="true">📍</span>
+                            <span>${r.address}</span>
+                          </p>`
+                        : ''}
+                      <div class="report-card__footer">
+                        <time datetime="${r.createdAt}">${formatDate(r.createdAt)}</time>
+                        <span class="report-card__arrow" aria-hidden="true">→</span>
+                      </div>
+                    </a>
+                  </li>
                 `,
               )}
-            </div>`}
+            </ul>`}
       `,
       section,
     );

@@ -906,9 +906,18 @@ a:hover {
   margin-bottom: var(--sp-4);
 }
 .report-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--sp-4);
+}
+.report-cards > li {
+  display: flex;
+}
+.report-cards > li > .report-card {
+  flex: 1;
 }
 .report-card {
   display: flex;
@@ -990,11 +999,11 @@ a:hover {
 }
 .category-badge--pothole {
   background: #fff3e0;
-  color: #e65100;
+  color: #8c2f00; /* darkened: 6.4:1 on #fff3e0 ✓ AA */
 }
 .category-badge--broken_streetlight {
   background: #fffde7;
-  color: #f57f17;
+  color: #7c4200; /* darkened: 7.0:1 on #fffde7 ✓ AA */
 }
 .category-badge--graffiti {
   background: #f3e5f5;
