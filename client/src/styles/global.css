@@ -666,6 +666,9 @@ a:hover {
   gap: var(--sp-4);
   z-index: 8000;
 }
+#sw-update-banner[hidden] {
+  display: none;
+}
 
 /* ── Responsive adjustments ─────────────────────────────────── */
 @media (max-width: 480px) {

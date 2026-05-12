@@ -1,3 +1,10 @@
+// Load .env file before anything else (Node 22+ built-in, no dotenv needed)
+try {
+  process.loadEnvFile();
+} catch {
+  // No .env file — environment variables must be set externally
+}
+
 import { buildServer, getVapidPublicKey } from './server.js';
 import { initVapid } from './push.js';
 

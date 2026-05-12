@@ -10,13 +10,12 @@ interface SubscriptionRow {
 }
 
 let vapidInitialized = false;
+let _cachedPublicKey = '';
+let _cachedPrivateKey = '';
 
 export function initVapid(): { publicKey: string; privateKey: string } {
   if (vapidInitialized) {
-    return {
-      publicKey: process.env['VAPID_PUBLIC_KEY'] ?? '',
-      privateKey: process.env['VAPID_PRIVATE_KEY'] ?? '',
-    };
+    return { publicKey: _cachedPublicKey, privateKey: _cachedPrivateKey };
   }
 
   let publicKey = process.env['VAPID_PUBLIC_KEY'];
@@ -34,6 +33,8 @@ export function initVapid(): { publicKey: string; privateKey: string } {
   }
 
   webpush.setVapidDetails(subject, publicKey, privateKey);
+  _cachedPublicKey = publicKey;
+  _cachedPrivateKey = privateKey;
   vapidInitialized = true;
   return { publicKey, privateKey };
 }

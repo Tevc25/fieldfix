@@ -19,14 +19,50 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: 'Drugo',
 };
 
+// Valid status transitions (mirrors server-side FSM)
+const TRANSITIONS: Record<ReportStatus, ReportStatus[]> = {
+  submitted: ['in_review', 'rejected'],
+  in_review: ['resolved', 'rejected'],
+  resolved: [],
+  rejected: [],
+};
+
+async function patchStatus(
+  id: string,
+  status: ReportStatus,
+  note: string,
+  adminToken: string,
+): Promise<void> {
+  const res = await fetch(`/api/reports/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Admin-Token': adminToken,
+    },
+    body: JSON.stringify({ status, note: note || undefined }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new ApiError(res.status, body.message ?? `HTTP ${res.status}`);
+  }
+}
+
 export function createReportDetailView(id: string): HTMLElement {
   const section = document.createElement('section');
   section.setAttribute('aria-labelledby', 'detail-heading');
+
+  // Admin panel state
+  let adminOpen = false;
+  let adminToken = localStorage.getItem('fieldfix-admin-token') ?? '';
+  let selectedStatus: ReportStatus | '' = '';
+  let adminNote = '';
+  let adminSubmitting = false;
 
   function renderDetail(report: ReportDetail): void {
     document.title = `${report.title} — PrijaviMesto`;
 
     const shareUrl = `${location.origin}/prijava/${report.id}`;
+    const nextStatuses = TRANSITIONS[report.status];
 
     render(
       html`
@@ -124,6 +160,128 @@ export function createReportDetailView(id: string): HTMLElement {
                 `,
               )}
             </ol>
+          </section>
+
+          <!-- Admin panel -->
+          <section
+            aria-labelledby="admin-heading"
+            style="margin-top:2rem;border-top:1px solid var(--c-surface-2);padding-top:1.5rem"
+          >
+            <h2 id="admin-heading" style="font-size:1rem;color:var(--c-text-secondary)">
+              Administracija
+            </h2>
+            ${!adminOpen
+              ? html`<button
+                  type="button"
+                  class="btn btn--secondary btn--sm"
+                  @click=${() => {
+                    adminOpen = true;
+                    selectedStatus = nextStatuses[0] ?? '';
+                    renderDetail(report);
+                  }}
+                >
+                  Spremeni status
+                </button>`
+              : html`
+                  <form
+                    @submit=${async (e: Event) => {
+                      e.preventDefault();
+                      if (!selectedStatus) return;
+                      adminSubmitting = true;
+                      renderDetail(report);
+                      try {
+                        if (adminToken) localStorage.setItem('fieldfix-admin-token', adminToken);
+                        await patchStatus(report.id, selectedStatus, adminNote, adminToken);
+                        showToast(`Status spremenjen v: ${STATUS_LABELS[selectedStatus]}`, {
+                          type: 'success',
+                        });
+                        adminOpen = false;
+                        adminNote = '';
+                        selectedStatus = '';
+                        const updated = await getReport(id);
+                        renderDetail(updated);
+                      } catch (err) {
+                        adminSubmitting = false;
+                        const msg = err instanceof ApiError ? err.message : 'Napaka';
+                        showToast(msg, { type: 'error' });
+                        renderDetail(report);
+                      }
+                    }}
+                    style="display:flex;flex-direction:column;gap:.75rem;max-width:28rem"
+                  >
+                    ${nextStatuses.length === 0
+                      ? html`<p style="color:var(--c-text-secondary);font-size:.875rem">
+                          Status je končen — nadaljnje spremembe niso možne.
+                        </p>`
+                      : html`
+                          <div class="form-group" style="margin-bottom:0">
+                            <label class="form-label" for="admin-token">Admin žeton</label>
+                            <input
+                              class="form-input"
+                              id="admin-token"
+                              type="password"
+                              autocomplete="current-password"
+                              placeholder="dev-admin-token-fieldfix"
+                              .value=${adminToken}
+                              @input=${(e: Event) => {
+                                adminToken = (e.target as HTMLInputElement).value;
+                              }}
+                            />
+                          </div>
+                          <div class="form-group" style="margin-bottom:0">
+                            <label class="form-label" for="new-status">Nov status</label>
+                            <select
+                              class="form-select"
+                              id="new-status"
+                              @change=${(e: Event) => {
+                                selectedStatus = (e.target as HTMLSelectElement)
+                                  .value as ReportStatus;
+                              }}
+                            >
+                              ${nextStatuses.map(
+                                (s) =>
+                                  html`<option value=${s} ?selected=${selectedStatus === s}>
+                                    ${STATUS_LABELS[s]}
+                                  </option>`,
+                              )}
+                            </select>
+                          </div>
+                          <div class="form-group" style="margin-bottom:0">
+                            <label class="form-label" for="admin-note">Opomba (neobvezno)</label>
+                            <input
+                              class="form-input"
+                              id="admin-note"
+                              type="text"
+                              placeholder="Npr. Delavci bodo prišli v torek."
+                              .value=${adminNote}
+                              @input=${(e: Event) => {
+                                adminNote = (e.target as HTMLInputElement).value;
+                              }}
+                            />
+                          </div>
+                          <div style="display:flex;gap:.5rem">
+                            <button
+                              type="submit"
+                              class="btn btn--primary btn--sm"
+                              ?disabled=${adminSubmitting}
+                              aria-busy=${adminSubmitting ? 'true' : 'false'}
+                            >
+                              ${adminSubmitting ? 'Pošiljam…' : 'Potrdi spremembo'}
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn--secondary btn--sm"
+                              @click=${() => {
+                                adminOpen = false;
+                                renderDetail(report);
+                              }}
+                            >
+                              Prekliči
+                            </button>
+                          </div>
+                        `}
+                  </form>
+                `}
           </section>
         </article>
       `,
