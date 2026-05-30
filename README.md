@@ -59,7 +59,7 @@ graph TB
 
 ```bash
 # Namestitev / Install
-git clone https://github.com/<username>/fieldfix.git
+git clone https://github.com/Tevc25/fieldfix.git
 cd fieldfix
 pnpm install
 
